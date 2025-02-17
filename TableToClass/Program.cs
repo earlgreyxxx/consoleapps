@@ -1,6 +1,4 @@
-﻿using TableToClass.src;
-
-namespace TableToClass
+﻿namespace TableToClass
 {
   /// <summary>
   /// </summary>
@@ -10,12 +8,12 @@ namespace TableToClass
     {
       var template = new TableClass();
       template.hostName = "localhost,14330";
+      template.hostName = "10.1.1.103,14330";
       template.databaseName = "tmweb@002";
       template.dbuser = "libpro001";
       template.loginName = $"{template.databaseName}${template.dbuser}";
       template.passwd = $"Ddk${template.dbuser}-PW";
       template.tables = ["stg_bibliography", "stg_collection"];
-
       Console.WriteLine(template.TransformText());
     }
   }

@@ -1,0 +1,203 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="Microsoft.Data.SqlClient" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data" #>
+<#@ import namespace="Microsoft.Data.SqlClient" #>
+<#@ output extension=".cs" #>
+<#
+    var file = this.Host.ResolvePath(".database.xml");
+    if(!File.Exists(file))
+      return "";
+
+    var xdoc = XDocument.Load(file);
+    var Databases = xdoc.Descendants("Database").Select(el => {
+    var Login = el.Element("Login");
+    var Tables = el.Element("Tables");
+      return new {
+        DataSource = el.Attribute("DataSource").Value,
+        Schema = el.Attribute("Schema").Value,
+        InitialCatalog = el.Attribute("InitialCatalog").Value,
+        UserID = Login.Element("UserID").Value,
+        Password = Login.Element("Password").Value,
+        Tables = Tables.Elements("Table"),
+        NameSpace = el.Attribute("NameSpace").Value,
+      };
+    });
+
+    var Database = Databases.First();
+#>
+namespace <#= Database.NameSpace #>
+{
+<#
+    
+    SqlConnectionStringBuilder stringBuilder = new();
+    stringBuilder.DataSource = Database.DataSource;
+    stringBuilder.InitialCatalog = Database.InitialCatalog;
+    stringBuilder.UserID = Database.UserID;
+    stringBuilder.Password = Database.Password;
+    stringBuilder.TrustServerCertificate = true;
+
+    using(var conn = new SqlConnection(stringBuilder.ConnectionString))
+    {
+      conn.Open();
+      foreach(var tableName in Database.Tables.Select(el => el.Value))
+      {
+        List<Columns> list = new();
+        string query = string.Format(Columns.SQL, Database.Schema, tableName);
+        SqlCommand cmd = new(query, conn);
+        using (var rd = cmd.ExecuteReader())
+        {
+          while(rd.Read())
+            list.Add(new Columns(rd));
+        }
+#>
+  /// <summary>
+  /// <#= tableName #>より生成されたクラス
+  /// </summary>
+  internal class <#= tableName #> : TableRow
+  {
+<#
+    foreach(var col in list)
+    {
+#>
+    <#= col.GetProperty() #>
+<#
+    }
+#>
+    public static string SQL = @"SELECT <#= string.Join(",", list.Select(r => r.COLUMN_NAME).ToArray()) #> FROM <#= tableName #>";
+    
+    public void SetDataSample(string[] fields)
+    {
+<#
+      var i = 0;
+      foreach(var col in list)
+      {
+#>
+      <#= col.GetSetData(i++) #>
+<#
+      }
+#>
+    }
+  }
+<#
+      }
+    }
+#>
+}
+<#+
+  public string hostName { set; get; }
+  public string databaseName { set; get; }
+  public string dbuser { set; get; }
+  public string loginName { set; get; }
+  public string passwd { set; get; }
+  public List<string> tables {set; get; }
+
+  class Columns {
+      public string TABLE_NAME { get; set; }
+      public string COLUMN_NAME { get; set; }
+      public int ORDINAL_POSITION { get; set; }
+      public string IS_NULLABLE { get; set; }
+      public string DATA_TYPE { get; set; }
+      public int? CHARACTER_MAXIMUM_LENGTH { get; set; }
+      public byte? NUMERIC_PRECISION { get; set; }
+      public int? NUMERIC_SCALE { get; set; }
+
+      public static string SQL = @"
+SELECT
+  TABLE_NAME,
+  COLUMN_NAME,
+  ORDINAL_POSITION,
+  IS_NULLABLE,
+  DATA_TYPE, 
+  CHARACTER_MAXIMUM_LENGTH,
+  NUMERIC_PRECISION,
+  NUMERIC_SCALE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = '{0}' AND TABLE_NAME = '{1}'
+ORDER BY ORDINAL_POSITION
+";
+
+      public Columns()
+      {
+
+      }
+
+      public Columns(SqlDataReader rd)
+      {
+        TABLE_NAME = rd.GetString(0);
+        COLUMN_NAME = rd.GetString(1);
+        ORDINAL_POSITION = rd.GetInt32(2);
+        IS_NULLABLE = rd.GetString(3);
+        DATA_TYPE = rd.GetString(4);
+        CHARACTER_MAXIMUM_LENGTH = rd.IsDBNull(5) ? (int?)null : rd.GetInt32(5);
+        NUMERIC_PRECISION = rd.IsDBNull(6) ?  (byte?)null : rd.GetByte(6);
+        NUMERIC_SCALE = rd.IsDBNull(7) ? (int?)null : rd.GetInt32(7);
+      }
+
+      public bool IsNullable()
+      {
+        var type = dicType[DATA_TYPE];
+        return (dicNullabel[type] && IS_NULLABLE == "YES");
+      }
+
+      public string GetSetData(int i)
+      {
+        var type = dicType[DATA_TYPE];
+        var fld = $"fields[{i}]";
+        if (!IsNullable())
+        {
+          if (type == "string")
+            return $"{COLUMN_NAME} = {fld};";
+
+          return $"{COLUMN_NAME} = {type}.Parse({fld});";
+        }
+
+        return $"{COLUMN_NAME} = string.IsNullOrEmpty({fld}) ? ({type}?)null : {type}.Parse({fld});";
+      }
+
+      public string GetProperty()
+      {
+        var type = dicType[DATA_TYPE];
+        var require = GetNullable() == "?" ? "" : "required ";
+        return $"public {require}{type}{GetNullable()} {COLUMN_NAME} {{ get; set; }}";
+      }
+
+      private string GetNullable()
+      {
+        return IsNullable() ? "?" : "";
+      }
+
+      private static Dictionary<string, bool> dicNullabel = new Dictionary<string, bool>()
+      {
+        {"string", false},
+        {"int", true},
+        {"byte", true},
+        {"short", true},
+        {"decimal", true},
+        {"bool", true},
+      };
+
+      private static Dictionary<string, string> dicType = new Dictionary<string, string>()
+      {
+        {"char", "string"},
+        {"varchar", "string"},
+        {"nvarchar", "string"},
+        {"nchar", "string"},
+        {"int", "int"},
+        {"tinyint", "byte"},
+        {"smallint", "short"},
+        {"decimal", "decimal"},
+        {"bit", "bool"},
+        {"datetime", "string"},
+        {"date", "string"}
+      };
+  }
+#>

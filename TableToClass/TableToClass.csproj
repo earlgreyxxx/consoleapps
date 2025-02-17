@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
+    <PackageReference Include="Microsoft.VisualStudio.TextTemplating" Version="17.10.40170" />
     <PackageReference Include="System.CodeDom" Version="9.0.2" />
   </ItemGroup>
 
@@ -25,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="src\TableClass.cs">
+    <Compile Update="TableClass.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>TableClass.tt</DependentUpon>
@@ -33,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="src\TableClass.tt">
+    <None Update="TableClass.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>TableClass.cs</LastGenOutput>
     </None>

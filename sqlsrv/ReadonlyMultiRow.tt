@@ -1,0 +1,89 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="Microsoft.Data.SqlClient" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data" #>
+<#@ import namespace="Microsoft.Data.SqlClient" #>
+<#@ output extension=".cs" #>
+<#
+    var file = this.Host.ResolvePath(".database.xml");
+    if(!File.Exists(file))
+      return "";
+
+    var xdoc = XDocument.Load(file);
+    var Databases = xdoc.Descendants("Database").Select(el => {
+    var Login = el.Element("Login");
+    var Tables = el.Element("Tables");
+      return new {
+        DataSource = el.Attribute("DataSource").Value,
+        Schema = el.Attribute("Schema").Value,
+        InitialCatalog = el.Attribute("InitialCatalog").Value,
+        UserID = Login.Element("UserID").Value,
+        Password = Login.Element("Password").Value,
+        Tables = Tables.Elements("Table"),
+        NameSpace = el.Attribute("NameSpace").Value,
+      };
+    });
+
+    var Database = Databases.First();
+#>
+namespace <#= Database.NameSpace #>
+{
+<#
+    SqlConnectionStringBuilder stringBuilder = new();
+    stringBuilder.DataSource = Database.DataSource;
+    stringBuilder.InitialCatalog = Database.InitialCatalog;
+    stringBuilder.UserID = Database.UserID;
+    stringBuilder.Password = Database.Password;
+    stringBuilder.TrustServerCertificate = true;
+
+    using(var conn = new SqlConnection(stringBuilder.ConnectionString))
+    {
+      conn.Open();
+      foreach(var SelectJoin in Database.SelectJoins.Select(el => el.Value))
+      {
+        List<Columns> list = new();
+        string query = SelectJoin;
+        SqlCommand cmd = new(query, conn);
+        var dataAdapter = new SqlDataAdapter(cmd);
+        DataSet dataset = new();
+        dataAdapter.FillSchema(dataset,SchemaType.Source);
+        if(dataset.Tables.Count <= 0)
+          continue;
+
+        var datatable = return dataset.Tables[0];
+#>
+  /// <summary>
+  /// <#= tableName #>より生成されたクラス
+  /// </summary>
+  internal class <#= tableName #> : TableRow
+  {
+<#
+    foreach(var col in datatable.Columns)
+    {
+#>
+    <#= col.GetProperty() #>
+<#
+    }
+#>
+  }
+<#
+      }
+    }
+#>
+}
+<#+
+  public string hostName { set; get; }
+  public string databaseName { set; get; }
+  public string dbuser { set; get; }
+  public string loginName { set; get; }
+  public string passwd { set; get; }
+  public List<string> tables {set; get; }
+#>

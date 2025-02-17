@@ -399,3 +399,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /TableToClass/src/TableClass.cs
+/TableToClass/TableClass.cs
+/sqlsrv/tmweb.cs
+/sqlsrv/.database.xml

@@ -1,4 +1,4 @@
-﻿<#@ template language="C#" #>
+﻿<#@ template debug="true" language="C#" #>
 <#@ assembly name="System.Core" #>
 <#@ assembly name="System.Data" #>
 <#@ assembly name="Microsoft.Data.SqlClient" #>
@@ -7,6 +7,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Data" #>
 <#@ import namespace="Microsoft.Data.SqlClient" #>
+<#@ output extension=".cs" #>
 
 <#
     if(this.hostName == null || this.databaseName == null || this.loginName == null || this.passwd == null || this.dbuser == null)
@@ -15,8 +16,13 @@
 namespace TableToClass
 {
 <#
-    string connstr = $"Data Source={this.hostName};Initial Catalog={this.databaseName};User ID={this.loginName};Password={this.passwd};TrustServerCertificate=true;Integrated Security=True";
-    using(var conn = new SqlConnection(connstr))
+    SqlConnectionStringBuilder stringBuilder = new();
+    stringBuilder.DataSource = this.hostName;
+    stringBuilder.InitialCatalog = this.databaseName;
+    stringBuilder.Password = this.passwd;
+    stringBuilder.UserID = this.loginName;
+    stringBuilder.TrustServerCertificate = true;
+    using(var conn = new SqlConnection(stringBuilder.ConnectionString))
     {
       conn.Open();
 

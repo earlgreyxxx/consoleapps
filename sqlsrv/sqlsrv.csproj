@@ -8,8 +8,61 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove=".database.xml" />
+    <None Remove="database.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ReadonlyMultiRow.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ReadonlyMultiRow.tt</DependentUpon>
+    </None>
+    <None Include="SimpleRow.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimpleRow.tt</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
+    <PackageReference Include="Microsoft.VisualStudio.TextTemplating" Version="17.10.40170" />
+    <PackageReference Include="System.CodeDom" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ReadonlyMultiRow.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ReadonlyMultiRow.cs</LastGenOutput>
+    </None>
+    <None Update="SimpleRow.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SimpleRow.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ReadonlyMultiRow.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ReadonlyMultiRow.tt</DependentUpon>
+    </Compile>
+    <Compile Update="SimpleRow.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimpleRow.tt</DependentUpon>
+    </Compile>
+    <Compile Update="tmweb.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>tmweb.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

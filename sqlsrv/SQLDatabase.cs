@@ -23,15 +23,5 @@ namespace sqlsrv
     {
       Conn?.Dispose();
     }
-
-    public IEnumerable<List<string>> GetEnumerator(string query)
-    {
-      // SqlCommandを使用してSQLクエリを実行します
-      var rows = Conn.Query
-      foreach(var row in rows)
-      {
-        
-      }
-    }
   }
 }
