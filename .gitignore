@@ -402,3 +402,5 @@ FodyWeavers.xsd
 /TableToClass/TableClass.cs
 /sqlsrv/tmweb.cs
 /sqlsrv/.database.xml
+/sqlsrv/SimpleRow.cs
+/sqlsrv/ReadonlyMultiRow.cs

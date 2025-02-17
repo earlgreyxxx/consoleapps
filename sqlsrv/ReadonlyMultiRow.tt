@@ -19,15 +19,15 @@
 
     var xdoc = XDocument.Load(file);
     var Databases = xdoc.Descendants("Database").Select(el => {
-    var Login = el.Element("Login");
-    var Tables = el.Element("Tables");
+      var Login = el.Element("Login");
+      var Queries = el.Element("Queries");
       return new {
         DataSource = el.Attribute("DataSource").Value,
         Schema = el.Attribute("Schema").Value,
         InitialCatalog = el.Attribute("InitialCatalog").Value,
         UserID = Login.Element("UserID").Value,
         Password = Login.Element("Password").Value,
-        Tables = Tables.Elements("Table"),
+        Queries = Queries.Elements("Query"),
         NameSpace = el.Attribute("NameSpace").Value,
       };
     });
@@ -47,29 +47,30 @@ namespace <#= Database.NameSpace #>
     using(var conn = new SqlConnection(stringBuilder.ConnectionString))
     {
       conn.Open();
-      foreach(var SelectJoin in Database.SelectJoins.Select(el => el.Value))
+      foreach(var Query in Database.Queries.Select(el => new { Value = el.Value,Name = el.Attribute("ClassName").Value }))
       {
-        List<Columns> list = new();
-        string query = SelectJoin;
-        SqlCommand cmd = new(query, conn);
+        string className = Query.Name;
+        SqlCommand cmd = new(Query.Value, conn);
         var dataAdapter = new SqlDataAdapter(cmd);
         DataSet dataset = new();
         dataAdapter.FillSchema(dataset,SchemaType.Source);
         if(dataset.Tables.Count <= 0)
           continue;
 
-        var datatable = return dataset.Tables[0];
+        var datatable = dataset.Tables[0];
 #>
   /// <summary>
-  /// <#= tableName #>より生成されたクラス
+  /// 自動生成されたクラス
   /// </summary>
-  internal class <#= tableName #> : TableRow
+  internal class <#= className #> : TableRow<<#= className #>>
   {
+    public static string SQL { get; } = @"<#= Query.Value #>";
+
 <#
-    foreach(var col in datatable.Columns)
+    foreach(DataColumn column in datatable.Columns)
     {
 #>
-    <#= col.GetProperty() #>
+    public <#= column.AllowDBNull ? string.Empty : "required " #><#= column.DataType.Name #><#= column.AllowDBNull ? "?" : string.Empty #> <#= column.Caption #> { set; get; }
 <#
     }
 #>

@@ -13,11 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="ReadonlyMultiRow.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ReadonlyMultiRow.tt</DependentUpon>
-    </None>
     <None Include="SimpleRow.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

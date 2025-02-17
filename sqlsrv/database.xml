@@ -11,5 +11,9 @@
       <Table>table3</Table>
       <Table>....</Table>
     </Tables>
+    <Queries>
+      <Query ClassName="Sample1">SELECT * FROM A INNER JOIN B ON A.id = B.id</Query>
+      <Query ClassName="Sample2">....</Query>
+    </Queries>
   </Database>
 </Databases>
