@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Databases>
+  <Database Target="tmweb" DataSource="localhost" Schema="dbo" InitialCatalog="sample" NameSpace="classnamespace">
+    <Login>
+      <UserID>login</UserID>
+      <Password>pass</Password>
+    </Login>
+    <Models Name="tmweb" Path=".\model.xml" />
+  </Database>
+</Databases>

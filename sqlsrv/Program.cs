@@ -24,7 +24,8 @@ namespace sqlsrv
       }
       var xdocument = XDocument.Load(xmlfile) ?? throw new Exception("XMLファイルをロード出来ませんでした。");
       var elRoot = xdocument.Root ?? throw new Exception("XMLファイルの解析に失敗しました。");
-      var elDatabase = elRoot.Element("Database") ?? throw new Exception("Database要素が見つかりません。");
+      var elDatabases = elRoot.Elements("Database") ?? throw new Exception("Database要素が見つかりません。");
+      var elDatabase = elDatabases.First(el => el.Attribute("Target")?.Value == "tmweb");
       var elLogin = elDatabase.Element("Login") ?? throw new Exception("認証要素が見つかりません");
 
       SqlConnectionStringBuilder builder = new()
@@ -38,7 +39,7 @@ namespace sqlsrv
 
       using var conn = new SqlConnection(builder.ConnectionString);
 
-      var row = Book.Query(conn, "WHERE [collection_id] = @collection_id", new { collection_id = 121 })?.FirstOrDefault();
+      var row = TableRow<Book>.Query(conn, "WHERE [collection_id] = @collection_id", new { collection_id = 121 })?.FirstOrDefault();
       Console.WriteLine($"{row?.collection_book_code}:{row?.bib_book_title}");
     }
   }

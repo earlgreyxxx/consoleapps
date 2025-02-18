@@ -19,20 +19,37 @@
 
     var xdoc = XDocument.Load(file);
     var Databases = xdoc.Descendants("Database").Select(el => {
-      var Login = el.Element("Login") ?? throw new Exception("認証情報を含む要素が見つかりません。");
-      var Queries = el.Element("Queries") ?? throw new Exception("SQLクエリ要素が見つかりません。");
+      var Login = el.Element("Login");
+      var Models = el.Element("Models");
       return new {
+        Target = el.Attribute("Target").Value,
         DataSource = el.Attribute("DataSource").Value,
         Schema = el.Attribute("Schema").Value,
         InitialCatalog = el.Attribute("InitialCatalog").Value,
         UserID = Login.Element("UserID").Value,
         Password = Login.Element("Password").Value,
-        Queries = Queries.Elements("Query"),
         NameSpace = el.Attribute("NameSpace").Value,
+        Models = new {
+          Path = Models.Attribute("Path").Value,
+          Name = Models.Attribute("Name").Value,
+        }
       };
     });
+    var Database = Databases.Where(db => db.Target == "tmweb").First();
+    var modelpath = this.Host.ResolvePath(Database.Models.Path);
+    if(!File.Exists(modelpath))
+      return string.Empty;
 
-    var Database = Databases.First();
+    xdoc = XDocument.Load(modelpath);
+    var Model = xdoc.Descendants("Model").Select(el => new {
+      Name = el.Attribute("Name").Value,
+      Queries = el.Element("Queries")
+    }).Where(model => model.Name == "tmweb").First();
+
+    var Queries = Model.Queries.Elements("Query").Select(query => new {
+      QueryString = query.Value,
+      ClassName = query.Attribute("ClassName").Value
+    });
 #>
 namespace <#= Database.NameSpace #>
 {
@@ -47,10 +64,11 @@ namespace <#= Database.NameSpace #>
     using(var conn = new SqlConnection(stringBuilder.ConnectionString))
     {
       conn.Open();
-      foreach(var Query in Database.Queries.Select(el => new { Value = el.Value,Name = el.Attribute("ClassName").Value }))
+      foreach(var q in Queries)
       {
-        string className = Query.Name;
-        SqlCommand cmd = new(Query.Value, conn);
+        string className = q.ClassName;
+        string queryString = q.QueryString;
+        SqlCommand cmd = new(queryString, conn);
         var dataAdapter = new SqlDataAdapter(cmd);
         DataSet dataset = new();
         dataAdapter.FillSchema(dataset,SchemaType.Source);
@@ -62,11 +80,11 @@ namespace <#= Database.NameSpace #>
   /// <summary>
   /// 自動生成されたクラス
   /// </summary>
-  internal class <#= className #> : TableRow<<#= className #>>
+  internal class <#= className #>
   {
     // statics
     // -------------------------------------------------------------
-    public static string SQL { get; } = @"<#= Query.Value #>";
+    public static string SQL { get; } = @"<#= queryString #>";
     public static bool ReadOnly { get; } = true;
 
     // instances
@@ -85,11 +103,3 @@ namespace <#= Database.NameSpace #>
     }
 #>
 }
-<#+
-  public string hostName { set; get; }
-  public string databaseName { set; get; }
-  public string dbuser { set; get; }
-  public string loginName { set; get; }
-  public string passwd { set; get; }
-  public List<string> tables {set; get; }
-#>

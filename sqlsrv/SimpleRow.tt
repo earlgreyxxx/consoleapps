@@ -19,20 +19,34 @@
 
     var xdoc = XDocument.Load(file);
     var Databases = xdoc.Descendants("Database").Select(el => {
-    var Login = el.Element("Login");
-    var Tables = el.Element("Tables");
+      var Login = el.Element("Login");
+      var Models = el.Element("Models");
       return new {
+        Target = el.Attribute("Target").Value,
         DataSource = el.Attribute("DataSource").Value,
         Schema = el.Attribute("Schema").Value,
         InitialCatalog = el.Attribute("InitialCatalog").Value,
         UserID = Login.Element("UserID").Value,
         Password = Login.Element("Password").Value,
-        Tables = Tables.Elements("Table"),
         NameSpace = el.Attribute("NameSpace").Value,
+        Models = new {
+          Path = Models.Attribute("Path").Value,
+          Name = Models.Attribute("Name").Value,
+        }
       };
     });
+    var Database = Databases.Where(db => db.Target == "tmweb").First();
+    var modelpath = this.Host.ResolvePath(Database.Models.Path);
+    if(!File.Exists(modelpath))
+      return string.Empty;
 
-    var Database = Databases.First();
+    xdoc = XDocument.Load(modelpath);
+    var Model = xdoc.Descendants("Model").Select(el => new {
+      Name = el.Attribute("Name").Value,
+      Tables = el.Element("Tables")
+    }).Where(model => model.Name == "tmweb").First();
+
+    var TableNames = Model.Tables.Elements("Table").Select(table => table.Value);
 #>
 namespace <#= Database.NameSpace #>
 {
@@ -48,7 +62,7 @@ namespace <#= Database.NameSpace #>
     using(var conn = new SqlConnection(stringBuilder.ConnectionString))
     {
       conn.Open();
-      foreach(var tableName in Database.Tables.Select(el => el.Value))
+      foreach(var tableName in TableNames)
       {
         List<Columns> list = new();
         string query = string.Format(Columns.SQL, Database.Schema, tableName);
@@ -62,7 +76,7 @@ namespace <#= Database.NameSpace #>
   /// <summary>
   /// <#= tableName #>より生成されたクラス
   /// </summary>
-  internal class <#= tableName #> : TableRow<<#= tableName #>>
+  internal class <#= tableName #>
   {
     // statics
     // -------------------------------------------------------------

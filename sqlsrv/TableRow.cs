@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace sqlsrv
 {
-  internal abstract class TableRow<T>
+  internal class TableRow<T>
   {
     private static Object? GetPropertyValue(string propName)
     {
