@@ -19,8 +19,8 @@
 
     var xdoc = XDocument.Load(file);
     var Databases = xdoc.Descendants("Database").Select(el => {
-      var Login = el.Element("Login");
-      var Queries = el.Element("Queries");
+      var Login = el.Element("Login") ?? throw new Exception("認証情報を含む要素が見つかりません。");
+      var Queries = el.Element("Queries") ?? throw new Exception("SQLクエリ要素が見つかりません。");
       return new {
         DataSource = el.Attribute("DataSource").Value,
         Schema = el.Attribute("Schema").Value,
@@ -64,13 +64,18 @@ namespace <#= Database.NameSpace #>
   /// </summary>
   internal class <#= className #> : TableRow<<#= className #>>
   {
+    // statics
+    // -------------------------------------------------------------
     public static string SQL { get; } = @"<#= Query.Value #>";
+    public static bool ReadOnly { get; } = true;
 
+    // instances
+    // -------------------------------------------------------------
 <#
     foreach(DataColumn column in datatable.Columns)
     {
 #>
-    public <#= column.AllowDBNull ? string.Empty : "required " #><#= column.DataType.Name #><#= column.AllowDBNull ? "?" : string.Empty #> <#= column.Caption #> { set; get; }
+    public <#= column.DataType.Name #>? <#= column.Caption #> { set; get; }
 <#
     }
 #>

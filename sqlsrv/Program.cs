@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Dapper;
+using System.Xml.Linq;
 
 namespace sqlsrv
 {
@@ -7,45 +8,38 @@ namespace sqlsrv
   {
     static void Main(string[] args)
     {
-      string schema = "libpro001";
-      SqlConnectionStringBuilder builder = new();
-      builder.DataSource = "localhost,14330";
-      builder.InitialCatalog = "tmweb@002";
-      builder.UserID = $"{builder.InitialCatalog}${schema}";
-      builder.Password = $"Ddk${schema}-PW";
-      builder.TrustServerCertificate = true;
+      var parameters = Utils.GetCommandlineArguments([..args]);
+      var dict = parameters.Item1;
+
+      string? xmlfile;
+      if (dict.ContainsKey("f") && dict["f"] != null && File.Exists(dict["f"]))
+        xmlfile = dict["f"];
+      else
+        xmlfile = ".database.xml";
+
+      if (!File.Exists(xmlfile))
+      {
+        Console.WriteLine("設定ファイル(.database.xml)が見つかりません。");
+        return;
+      }
+      var xdocument = XDocument.Load(xmlfile) ?? throw new Exception("XMLファイルをロード出来ませんでした。");
+      var elRoot = xdocument.Root ?? throw new Exception("XMLファイルの解析に失敗しました。");
+      var elDatabase = elRoot.Element("Database") ?? throw new Exception("Database要素が見つかりません。");
+      var elLogin = elDatabase.Element("Login") ?? throw new Exception("認証要素が見つかりません");
+
+      SqlConnectionStringBuilder builder = new()
+      {
+        DataSource = elDatabase.Attribute("DataSource")?.Value ?? "",
+        InitialCatalog = elDatabase.Attribute("InitialCatalog")?.Value ?? "",
+        UserID = elLogin.Element("UserID")?.Value ?? string.Empty,
+        Password = elLogin.Element("Password")?.Value ?? string.Empty,
+        TrustServerCertificate = true
+      };
 
       using var conn = new SqlConnection(builder.ConnectionString);
-      //ShowSimple(conn);
-      //ShowMulti(conn);
 
-      foreach(var row in stg_bibliography.Query(conn))
-        Console.WriteLine($"{row.bib_book_title}／{row.bib_book_title_yomi}");
-    }
-
-    private static void ShowSimple(SqlConnection conn)
-    {
-      string queryString = stg_bibliography.SQL;
-
-      var rows = conn.Query<stg_bibliography>(queryString);
-
-      foreach (var row in rows)
-      {
-        Console.WriteLine($"{row.bib_book_title}／{row.bib_book_title_yomi}");
-      }
-    }
-
-    private static void ShowMulti(SqlConnection conn)
-    {
-      string queryString = $@"{Book.SQL} WHERE [bib_id] = @bibid";
-
-      var rows = conn.Query<Book>(queryString, new { bibid = 1 }, buffered: false);
-
-      foreach (var row in rows)
-      {
-        Console.WriteLine($"{row.bib_book_title}／{row.collection_book_code}／{row.bib_id}");
-      }
-
+      var row = Book.Query(conn, "WHERE [collection_id] = @collection_id", new { collection_id = 121 })?.FirstOrDefault();
+      Console.WriteLine($"{row?.collection_book_code}:{row?.bib_book_title}");
     }
   }
 }

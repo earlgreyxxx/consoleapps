@@ -64,6 +64,13 @@ namespace <#= Database.NameSpace #>
   /// </summary>
   internal class <#= tableName #> : TableRow<<#= tableName #>>
   {
+    // statics
+    // -------------------------------------------------------------
+    public static string SQL { get; } = @"SELECT <#= string.Join(",", list.Select(r => r.COLUMN_NAME).ToArray()) #> FROM <#= tableName #>";
+    public static bool ReadOnly { get; } = false;
+
+    // instances
+    // -------------------------------------------------------------
 <#
     foreach(var col in list)
     {
@@ -72,8 +79,7 @@ namespace <#= Database.NameSpace #>
 <#
     }
 #>
-    public static string SQL { get; } = @"SELECT <#= string.Join(",", list.Select(r => r.COLUMN_NAME).ToArray()) #> FROM <#= tableName #>";
-    
+
     public void SetDataSample(string[] fields)
     {
 <#
@@ -166,8 +172,7 @@ ORDER BY ORDINAL_POSITION
       public string GetProperty()
       {
         var type = dicType[DATA_TYPE];
-        var require = GetNullable() == "?" ? "" : "required ";
-        return $"public {require}{type}{GetNullable()} {COLUMN_NAME} {{ get; set; }}";
+        return $"public {type}? {COLUMN_NAME} {{ get; set; }}";
       }
 
       private string GetNullable()
@@ -183,6 +188,7 @@ ORDER BY ORDINAL_POSITION
         {"short", true},
         {"decimal", true},
         {"bool", true},
+        {"DateTime",true },
       };
 
       private static Dictionary<string, string> dicType = new Dictionary<string, string>()
@@ -196,7 +202,7 @@ ORDER BY ORDINAL_POSITION
         {"smallint", "short"},
         {"decimal", "decimal"},
         {"bit", "bool"},
-        {"datetime", "string"},
+        {"datetime", "DateTime"},
         {"date", "string"}
       };
   }
