@@ -405,3 +405,6 @@ FodyWeavers.xsd
 /sqlsrv/SimpleRow.cs
 /sqlsrv/ReadonlyMultiRow.cs
 /sqlsrv/Properties/launchSettings.json
+/sqlsrv/TmwebReadonly.cs
+/sqlsrv/TmwebSimple.cs
+/sqlsrv/TmnetSimple.cs

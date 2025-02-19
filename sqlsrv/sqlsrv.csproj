@@ -13,14 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="SimpleRow.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleRow.tt</DependentUpon>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.TextTemplating" Version="17.10.40170">
@@ -30,13 +22,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="ReadonlyMultiRow.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ReadonlyMultiRow.cs</LastGenOutput>
+    <None Update="conf\database.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="SimpleRow.tt">
+    <None Update="conf\model.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TmnetSimple.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SimpleRow.cs</LastGenOutput>
+      <LastGenOutput>TmnetSimple.cs</LastGenOutput>
+    </None>
+    <None Update="TmwebReadonly.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TmwebReadonly.cs</LastGenOutput>
+    </None>
+    <None Update="TmwebSimple.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TmwebSimple.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -45,20 +47,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="ReadonlyMultiRow.cs">
+    <Compile Update="TmnetSimple.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>ReadonlyMultiRow.tt</DependentUpon>
+      <DependentUpon>TmnetSimple.tt</DependentUpon>
     </Compile>
-    <Compile Update="SimpleRow.cs">
+    <Compile Update="TmwebReadonly.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleRow.tt</DependentUpon>
+      <DependentUpon>TmwebReadonly.tt</DependentUpon>
     </Compile>
-    <Compile Update="tmweb.cs">
+    <Compile Update="TmwebSimple.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>tmweb.tt</DependentUpon>
+      <DependentUpon>TmwebSimple.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

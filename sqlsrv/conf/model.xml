@@ -2,11 +2,126 @@
 <Models>
   <Model Name="tmweb">
     <Tables>
+      <Table>biz_check</Table>
+      <Table>biz_lending</Table>
+      <Table>biz_reservation</Table>
+      <Table>mgr_biz_share_libraries</Table>
+      <Table>mgr_dict_configure</Table>
+      <Table>mgr_mst_library</Table>
+      <Table>mgr_mst_library_category</Table>
+      <Table>mgr_mst_region</Table>
+      <Table>mgr_stg_login</Table>
+      <Table>mst_accept_category</Table>
+      <Table>mst_accept_location</Table>
+      <Table>mst_account_category</Table>
+      <Table>mst_aggregate_keyword</Table>
+      <Table>mst_archive</Table>
+      <Table>mst_authority</Table>
+      <Table>mst_class_symbol</Table>
+      <Table>mst_class_symbol_secondary</Table>
+      <Table>mst_contact</Table>
+      <Table>mst_forbidden_category</Table>
+      <Table>mst_frequency</Table>
+      <Table>mst_gender</Table>
+      <Table>mst_hierarchy</Table>
+      <Table>mst_holiday</Table>
+      <Table>mst_interlibrary_category</Table>
+      <Table>mst_language</Table>
+      <Table>mst_limits</Table>
+      <Table>mst_managers</Table>
+      <Table>mst_material</Table>
+      <Table>mst_mediatype</Table>
+      <Table>mst_permition</Table>
+      <Table>mst_removal_category</Table>
+      <Table>mst_search_category</Table>
+      <Table>mst_shelf</Table>
+      <Table>mst_shelf_category</Table>
+      <Table>mst_status</Table>
+      <Table>mst_users</Table>
+      <Table>stg_accept_book</Table>
+      <Table>stg_account</Table>
+      <Table>stg_account_20241210</Table>
       <Table>stg_bibliography</Table>
       <Table>stg_collection</Table>
+      <Table>stg_item</Table>
+      <Table>stg_itemlist</Table>
+      <Table>stg_manager_account</Table>
+      <Table>stg_permition</Table>
+      <Table>stg_removal_book</Table>
+      <Table>stg_session</Table>
+      <Table>stg_token</Table>
+      <Table>tmp_upgrading</Table>
     </Tables>
     <Queries>
       <Query ClassName="Book">SELECT [collection_id],[collection_book_code],[collection_alternative_symbol],[collection_class_symbol_id],[collection_class_symbol_secondary_id],[collection_book_symbol],[collection_volume_symbol],[collection_mediatype_id],[collection_shelf_id],[collection_forbidden_category_id],[collection_interlibrary_category_id],[collection_interlibrary_import_library_id],[collection_interlibrary_import_collection_id],[collection_status_id],[collection_accept_book_id],[collection_uncertained_count],[collection_remarks],[collection_shelf_date],[collection_registdate],[collection_lastupdate],[bib_id],[bib_code],[bib_interlibrary_import_library_id],[bib_interlibrary_import_bib_id],[bib_material_id],[bib_language_id],[bib_alternative_symbol],[bib_class_symbol_id],[bib_class_symbol_secondary_id],[bib_book_symbol],[bib_volume_symbol],[bib_version],[bib_isbn],[bib_issn],[bib_magazine_code],[bib_frequency_id],[bib_book_title],[bib_book_title_yomi],[bib_book_subtitle],[bib_book_subtitle_yomi],[bib_series],[bib_series_yomi],[bib_origin],[bib_author],[bib_author_yomi],[bib_author_intro],[bib_note],[bib_general_subject],[bib_general_subject_yomi],[bib_personal_subject],[bib_personal_subject_yomi],[bib_content_intro],[bib_content_detail],[bib_publisher],[bib_publish_place],[bib_publish_year],[bib_page_nums],[bib_book_size],[bib_price],[bib_mark_id],[bib_mark_category_id],[bib_isbn_secondary],[bib_parent_bib_id],[bib_target_id],[bib_publish_country_code_id],[bib_work_language],[bib_no],[bib_volume_no],[bib_registdate],[bib_lastupdate],[status_code],[status_name],[forbidden_category_code],[forbidden_category_name],[material_id],[material_code],[material_name],[class_symbol_code],[class_symbol_secondary_code],[interlibrary_category_code],[lental_lending_status],[check_time],[shelf_name],[shelf_code],[archive_code],[archive_name],(SELECT COUNT([resv_id]) FROM [biz_reservation]  WHERE [resv_lent] IS NULL AND [resv_bib_id] = [bib_id]) AS resv_count FROM [stg_collection]  INNER JOIN [stg_bibliography] ON [bib_id] = [collection_bib_id] INNER JOIN [mst_material] ON [material_id] = [bib_material_id] LEFT JOIN [mst_shelf] ON [shelf_id] = [collection_shelf_id] LEFT JOIN [mst_archive] ON [archive_id] = [shelf_archive_id] LEFT JOIN [mst_class_symbol] ON [class_symbol_id] = [collection_class_symbol_id] LEFT JOIN [mst_class_symbol_secondary] ON [class_symbol_secondary_id] = [collection_class_symbol_secondary_id] INNER JOIN [mst_forbidden_category] ON [forbidden_category_id] = [collection_forbidden_category_id] INNER JOIN [mst_interlibrary_category] ON [interlibrary_category_id] = [collection_interlibrary_category_id] INNER JOIN [mst_status] ON [status_id] = [collection_status_id] LEFT JOIN [biz_lending] ON [lental_collection_id] = [collection_id] AND [lental_lending_status] = N'lending' LEFT JOIN [biz_check] ON [check_collection_id] = [collection_id]</Query>
+      <Query ClassName="TokenInfo">SELECT * FROM [stg_token]  INNER JOIN [stg_account] ON [account_id] = [token_account_id] INNER JOIN [mst_account_category] ON [account_category_id] = [account_account_category_id] INNER JOIN [mst_hierarchy] ON [hierarchy_id] = [account_hierarchy_id] INNER JOIN [mst_users] ON [user_id] = [account_user_id] INNER JOIN [mst_gender] ON [gender_id] = [user_gender] LEFT JOIN [mst_contact] ON [contact_user_id] = [user_id]</Query>
+      <Query ClassName="LentalInfo">SELECT DISTINCT [biz_lending].*,[stg_collection].*,[stg_bibliography].*,[stg_token].*,[stg_account].*,[mst_account_category].*,[mst_hierarchy].*,[mst_users].*,[resv_bib_id] FROM [biz_lending]  INNER JOIN [stg_collection] ON [collection_id] = [lental_collection_id] INNER JOIN [stg_bibliography] ON [bib_id] = [collection_bib_id] INNER JOIN [stg_token] ON [token_id] = [lental_token_id] INNER JOIN [stg_account] ON [account_id] = [token_account_id] INNER JOIN [mst_account_category] ON [account_category_id] = [account_account_category_id] LEFT JOIN [mst_hierarchy] ON [hierarchy_id] = [account_hierarchy_id] INNER JOIN [mst_users] ON [user_id] = [account_user_id] LEFT JOIN [biz_reservation] ON [resv_bib_id] = [bib_id] AND [resv_lent] IS NULL</Query>
     </Queries>
   </Model>
+  <Model Name="tmnet">
+    <Tables>
+      <Table ClassName="TFrequency">t_刊行頻度</Table>
+      <Table ClassName="TForbiddenCategory">t_禁帯区分</Table>
+      <Table ClassName="TMaterialCategory">t_資料区分</Table>
+      <Table ClassName="TLibraryCategory">t_所蔵館区分</Table>
+      <Table ClassName="TCollectionStatus">t_所蔵状態</Table>
+      <Table ClassName="TRemovalCategory">t_除籍区分</Table>
+      <Table ClassName="TGender">t_性別</Table>
+      <Table ClassName="TLentalStatus">t_貸出状況</Table>
+      <Table ClassName="TLanguageCategory">t_和洋区分</Table>
+      <Table ClassName="TdLental">td_図書貸出</Table>
+      <Table ClassName="TdReserve">td_図書予約</Table>
+      <Table ClassName="TdBookSelection">td_選書</Table>
+      <Table ClassName="TdLentalHistory">td_貸出履歴</Table>
+      <Table ClassName="TmAcceptCategory">tm_受入区分</Table>
+      <Table ClassName="TmAcceptSource">tm_受入先</Table>
+      <Table ClassName="TmCollection">tm_所蔵</Table>
+      <Table ClassName="TmLibrary">tm_所蔵館</Table>
+      <Table ClassName="TmBibliography">tm_書誌</Table>
+      <Table ClassName="TmOperationPermission">tm_操作権限</Table>
+      <Table ClassName="TmShelf">tm_配架場所</Table>
+      <Table ClassName="TmClassify">tm_分類</Table>
+      <Table ClassName="TmUser">tm_利用者</Table>
+      <Table ClassName="TmUserCategory">tm_利用者区分</Table>
+    </Tables>
+    <Queries></Queries>
+  </Model>
 </Models>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

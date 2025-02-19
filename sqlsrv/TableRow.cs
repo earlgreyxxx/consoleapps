@@ -14,19 +14,19 @@ namespace sqlsrv
       return propInfo?.GetValue(null);
     }
 
-    public static IEnumerable<T>? Query(SqlConnection conn,string? additional = null,object? parameters = null)
+    public static IEnumerable<T>? Query(SqlConnection conn,string? additional = null,object? param = null)
     {
       string? value = (GetPropertyValue("SQL")?.ToString()) ?? throw new Exception("SQLプロパティがありません。");
 
       IEnumerable<T>? rv;
-      if (string.IsNullOrEmpty(additional) && parameters != null)
+      if (string.IsNullOrEmpty(additional) && param != null)
       {
         rv = conn.Query<T>(value, buffered: false);
       }
       else
       {
         string sql = $"{value} {additional}";
-        rv = conn.Query<T>(sql,parameters,buffered: false);
+        rv = conn.Query<T>(sql,param,buffered: false);
       }
       return rv;
     }
@@ -41,7 +41,7 @@ namespace sqlsrv
       return rv;
     }
 
-    public static int Update(SqlConnection conn, object cv, string condition)
+    public static int Update(SqlConnection conn, string condition, object? param = null)
     {
       bool? readOnly = (bool)(GetPropertyValue("ReadOnly") ?? throw new Exception("ReadOnlyプロパティがありません"));
       if (readOnly == true)

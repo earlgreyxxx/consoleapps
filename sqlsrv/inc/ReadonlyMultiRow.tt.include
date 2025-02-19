@@ -1,41 +1,23 @@
-﻿<#@ template debug="true" hostspecific="true" language="C#" #>
-<#@ assembly name="System.Core" #>
-<#@ assembly name="System.Data" #>
-<#@ assembly name="System.Xml" #>
-<#@ assembly name="System.Xml.Linq" #>
-<#@ assembly name="Microsoft.Data.SqlClient" #>
-<#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Xml.Linq" #>
-<#@ import namespace="System.Text" #>
-<#@ import namespace="System.IO" #>
-<#@ import namespace="System.Collections.Generic" #>
-<#@ import namespace="System.Data" #>
-<#@ import namespace="Microsoft.Data.SqlClient" #>
-<#@ output extension=".cs" #>
-<#
-    var file = this.Host.ResolvePath(".database.xml");
-    if(!File.Exists(file))
-      return "";
-
+﻿<#
     var xdoc = XDocument.Load(file);
     var Databases = xdoc.Descendants("Database").Select(el => {
       var Login = el.Element("Login");
       var Models = el.Element("Models");
       return new {
-        Target = el.Attribute("Target").Value,
-        DataSource = el.Attribute("DataSource").Value,
-        Schema = el.Attribute("Schema").Value,
-        InitialCatalog = el.Attribute("InitialCatalog").Value,
-        UserID = Login.Element("UserID").Value,
-        Password = Login.Element("Password").Value,
-        NameSpace = el.Attribute("NameSpace").Value,
+        Target = el.Attribute("Target")?.Value,
+        DataSource = el.Attribute("DataSource")?.Value,
+        Schema = el.Attribute("Schema")?.Value,
+        InitialCatalog = el.Attribute("InitialCatalog")?.Value,
+        UserID = Login.Element("UserID")?.Value,
+        Password = Login.Element("Password")?.Value,
+        NameSpace = el.Attribute("NameSpace")?.Value,
         Models = new {
-          Path = Models.Attribute("Path").Value,
-          Name = Models.Attribute("Name").Value,
+          Path = Models.Attribute("Path")?.Value,
+          Name = Models.Attribute("Name")?.Value,
         }
       };
     });
-    var Database = Databases.Where(db => db.Target == "tmweb").First();
+    var Database = Databases.Where(db => db.Target == target).FirstOrDefault() ?? throw new Exception($"Target:{target}がありません。");
     var modelpath = this.Host.ResolvePath(Database.Models.Path);
     if(!File.Exists(modelpath))
       return string.Empty;
