@@ -7,4 +7,11 @@
     </Login>
     <Models Name="tmweb" Path=".\model.xml" />
   </Database>
+  <Database Target="tmnet" DataSource="localhost" Schema="dbo" InitialCatalog="sample" NameSpace="classnamespace">
+    <Login>
+      <UserID>sa</UserID>
+      <Password>Ddkpass@0001</Password>
+    </Login>
+    <Models Name="tmnet" Path=".\model.xml" />
+  </Database>
 </Databases>

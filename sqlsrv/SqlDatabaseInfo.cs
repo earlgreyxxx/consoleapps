@@ -70,14 +70,14 @@ namespace sqlsrv
 
       var xdoc = XDocument.Load(ConfPath) ?? throw new Exception("XMLファイルをロード出来ませんでした。");
       var elRoot = xdoc.Root ?? throw new Exception("ルート要素がありません");
-      var elDatabases = elRoot.Elements("Database");
-      var elDatabase = elDatabases.FirstOrDefault(el => el.Attribute("Target")?.Value == target) ?? throw new Exception("指定された対象が見つかりません");
-      var elLogin = elDatabase?.Element("Login") ?? throw new Exception("認証要素が見つかりません");
+
+      var elDatabase = elRoot.XPathSelectElement($"./Database[@Target=\"{target}\"]") ?? throw new Exception("指定された対象が見つかりません");
+      var elLogin = elDatabase.XPathSelectElement("./Login") ?? throw new Exception("認証要素が見つかりません");
 
       DataSource = elDatabase.Attribute("DataSource")?.Value ?? "";
       InitialCatalog = elDatabase.Attribute("InitialCatalog")?.Value ?? "";
-      UserID = elLogin.Element("UserID")?.Value ?? string.Empty;
-      Password = elLogin.Element("Password")?.Value ?? string.Empty;
+      UserID = elDatabase.XPathSelectElement("Login/UserID")?.Value ?? string.Empty;
+      Password = elDatabase.XPathSelectElement("Login/Password")?.Value ?? string.Empty;
       Target = elDatabase.Attribute("Target")?.Value;
 
       var models = elDatabase.Element("Models");
@@ -97,16 +97,14 @@ namespace sqlsrv
     private void LoadModel(string xmlpath, string name)
     {
       var xdoc = XDocument.Load(xmlpath);
-      Model = xdoc.Descendants("Model").Select(el =>
-      {
-        var Tables = el.Element("Tables");
-        var Queries = el.Element("Queries");
-        return new Tuple<string?, IEnumerable<Table>?, IEnumerable<Query>?>(
-          el.Attribute("Name")?.Value,
-          Tables?.Elements("Table").Select(table => new Table() { Value = table.Value, Name = table.Attribute("ClassName")?.Value }),
-          Queries?.Elements("Query").Select(query => new Query() { Value = query.Value, Name = query.Attribute("ClassName")?.Value })
-        );
-      }).FirstOrDefault(model => model.Item1 == name);
+      var model = xdoc.Root?.XPathSelectElement($"Model[@Name=\"{name}\"]");
+      var Tables = model?.Element("Tables");
+      var Queries = model?.Element("Queries");
+      Model = new Tuple<string?, IEnumerable<Table>?, IEnumerable<Query>?>(
+        model?.Attribute("Name")?.Value,
+        Tables?.Elements("Table").Select(table => new Table() { Value = table.Value, Name = table.Attribute("ClassName")?.Value }),
+        Queries?.Elements("Query").Select(query => new Query() { Value = query.Value, Name = query.Attribute("ClassName")?.Value })
+      );
     }
 
     public override string ToString()

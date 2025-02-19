@@ -142,7 +142,7 @@ ORDER BY ORDINAL_POSITION
       public Columns(SqlDataReader rd)
       {
         TABLE_NAME = rd.GetString(0);
-        COLUMN_NAME = rd.GetString(1);
+        COLUMN_NAME = rd.GetString(1).Replace("-",string.Empty);
         ORDINAL_POSITION = rd.GetInt32(2);
         IS_NULLABLE = rd.GetString(3);
         DATA_TYPE = rd.GetString(4);

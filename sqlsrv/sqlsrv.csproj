@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="SimpleRow.cs" />
+    <Compile Remove="SQLDatabase.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove=".database.xml" />
     <None Remove="database.xml" />
   </ItemGroup>
@@ -27,6 +32,12 @@
     </None>
     <None Update="conf\model.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="inc\ReadonlyMultiRow.tt">
+      <Generator></Generator>
+    </None>
+    <None Update="inc\SimpleRow.tt">
+      <Generator></Generator>
     </None>
     <None Update="TmnetSimple.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

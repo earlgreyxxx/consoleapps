@@ -19,4 +19,4 @@
     if(!File.Exists(file))
       return "";
 #>
-<#@ include file="inc/ReadonlyMultiRow.tt.include" #>
+<#@ include file="inc/ReadonlyMultiRow.tt" #>
