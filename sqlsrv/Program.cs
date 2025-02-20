@@ -1,6 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using Dapper;
-using System.Xml.Linq;
 
 namespace sqlsrv
 {
@@ -23,12 +21,24 @@ namespace sqlsrv
         return;
       }
 
-      var dbinfo = new SqlDatabaseInfo("tmweb",xmlfile);
+      var dbinfo = new SqlDatabaseInfo("tmnet",xmlfile);
 
       using var conn = new SqlConnection(dbinfo.ToString());
+      conn.Open();
 
-      var row = TableRow<LentalInfo>.Query(conn, "WHERE [collection_id] = @collection_id", new { collection_id = 121 })?.FirstOrDefault();
-      Console.WriteLine($"{row?.collection_book_code}:{row?.bib_book_title}");
+      var rows = TableRow<TmnCollection>.Query(conn);
+      if (rows == null)
+        return;
+
+      foreach (var row in rows)
+      {
+        var props = TableRow<TmnCollection>.GetEnumerator(row);
+        foreach (var prop in props)
+        {
+          Console.WriteLine($"{prop.Key?.ToString()} = {prop.Value?.ToString()}");
+        }
+        Console.WriteLine("\n-------------------------------------------------------");
+      }
     }
   }
 }

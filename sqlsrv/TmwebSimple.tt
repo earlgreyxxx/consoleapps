@@ -3,9 +3,11 @@
 <#@ assembly name="System.Data" #>
 <#@ assembly name="System.Xml" #>
 <#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="System.Xml.XPath" #>
 <#@ assembly name="Microsoft.Data.SqlClient" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Xml.XPath" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Text.RegularExpressions" #>
 <#@ import namespace="System.IO" #>
@@ -15,6 +17,7 @@
 <#@ output extension=".cs" #>
 <#
     string target = "tmweb";
+
     var file = this.Host.ResolvePath(".database.xml");
     if(!File.Exists(file))
       return "";

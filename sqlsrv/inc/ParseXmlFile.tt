@@ -1,0 +1,32 @@
+<#
+    var xdoc = XDocument.Load(file);
+    XElement el = xdoc.Root?.XPathSelectElement($"./Database[@Target='{target}']");
+    var Login = el.Element("Login");
+    var Models = el.Element("Models");
+
+    var Database = new {
+      Target = el.Attribute("Target")?.Value,
+      DataSource = el.Attribute("DataSource")?.Value,
+      Schema = el.Attribute("Schema")?.Value,
+      InitialCatalog = el.Attribute("InitialCatalog")?.Value,
+      UserID = el.XPathSelectElement("./Login/UserID")?.Value,
+      Password = el.XPathSelectElement("./Login/Password")?.Value,
+      NameSpace = el.Attribute("NameSpace")?.Value,
+      Models = new {
+        Path = el.XPathSelectElement("./Models")?.Attribute("Path")?.Value,
+        Name = el.XPathSelectElement("./Models")?.Attribute("Name")?.Value
+      }
+    };
+
+    var modelpath = this.Host.ResolvePath(Database.Models.Path);
+    if(!File.Exists(modelpath))
+      return string.Empty;
+
+    xdoc = XDocument.Load(modelpath);
+    el = xdoc.Root?.XPathSelectElement($"./Model[@Name='{target}']");
+    var Model = new {
+      Name = el.Attribute("Name").Value,
+      Tables = el.XPathSelectElements("./Tables/Table").Select(t => new { Table = t.Value,ClassName = t.Attribute("ClassName")?.Value }),
+      Queries = el.XPathSelectElements("./Queries/Query").Select(q => new { QueryString = q.Value,ClassName = q.Attribute("ClassName")?.Value }),
+    };
+#>

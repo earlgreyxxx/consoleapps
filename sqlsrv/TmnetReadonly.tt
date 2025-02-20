@@ -16,7 +16,7 @@
 <#@ import namespace="Microsoft.Data.SqlClient" #>
 <#@ output extension=".cs" #>
 <#
-    string target = "tmweb";
+    string target = "tmnet";
 
     var file = this.Host.ResolvePath(".database.xml");
     if(!File.Exists(file))

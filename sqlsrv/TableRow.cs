@@ -6,17 +6,22 @@ namespace sqlsrv
 {
   internal class TableRow<T>
   {
-    private static Object? GetPropertyValue(string propName)
+    static TableRow()
     {
-      Type type = typeof(T);
-      PropertyInfo? propInfo = type.GetProperty(propName);
+      SqlMapper.SetTypeMap(
+        typeof(T),
+        new CustomPropertyTypeMap(typeof(T), (type, column) => type.GetProperty(column.Replace("-", string.Empty)) ?? throw new Exception("プロパティーがありません"))
+      );
+    }
 
-      return propInfo?.GetValue(null);
+    private static object? GetPropertyValue(string propName)
+    {
+      return typeof(T).GetProperty(propName)?.GetValue(null);
     }
 
     public static IEnumerable<T>? Query(SqlConnection conn,string? additional = null,object? param = null)
     {
-      string? value = (GetPropertyValue("SQL")?.ToString()) ?? throw new Exception("SQLプロパティがありません。");
+      string value = (GetPropertyValue("SQL")?.ToString()) ?? throw new Exception("SQLプロパティがありません。");
 
       IEnumerable<T>? rv;
       if (string.IsNullOrEmpty(additional) && param != null)
@@ -27,6 +32,23 @@ namespace sqlsrv
       {
         string sql = $"{value} {additional}";
         rv = conn.Query<T>(sql,param,buffered: false);
+      }
+      return rv;
+    }
+
+    public static T? QuerySingle(SqlConnection conn,string? additional = null,object? param = null)
+    {
+      string value = (GetPropertyValue("SQL")?.ToString()) ?? throw new Exception("SQLプロパティがありません。");
+
+      T rv;
+      if (string.IsNullOrEmpty(additional) && param != null)
+      {
+        rv = conn.QuerySingle<T>(value);
+      }
+      else
+      {
+        string sql = $"{value} {additional}";
+        rv = conn.QuerySingle<T>(sql, param);
       }
       return rv;
     }
@@ -59,6 +81,11 @@ namespace sqlsrv
 
       int rv = 0;
       return rv;
+    }
+
+    public static IEnumerable<KeyValuePair<string?, object?>> GetEnumerator(T? inst)
+    {
+      return typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Select(prop => new KeyValuePair<string?,object?>(prop?.Name,prop?.GetValue(inst)));
     }
   }
 }

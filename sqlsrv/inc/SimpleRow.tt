@@ -1,36 +1,4 @@
-﻿<#
-    var xdoc = XDocument.Load(file);
-    var Databases = xdoc.Descendants("Database").Select(el => {
-      var Login = el.Element("Login");
-      var Models = el.Element("Models");
-      return new {
-        Target = el.Attribute("Target")?.Value,
-        DataSource = el.Attribute("DataSource")?.Value,
-        Schema = el.Attribute("Schema")?.Value,
-        InitialCatalog = el.Attribute("InitialCatalog")?.Value,
-        UserID = Login.Element("UserID")?.Value,
-        Password = Login.Element("Password")?.Value,
-        NameSpace = el.Attribute("NameSpace")?.Value,
-        Models = new {
-          Path = Models.Attribute("Path")?.Value,
-          Name = Models.Attribute("Name")?.Value,
-        }
-      };
-    });
-    var Database = Databases.FirstOrDefault(db => db.Target == target) ?? throw new Exception($"Target:{target}がありません。");
-    var modelpath = this.Host.ResolvePath(Database.Models.Path);
-    if(!File.Exists(modelpath))
-      return string.Empty;
-
-    xdoc = XDocument.Load(modelpath);
-    var Model = xdoc.Descendants("Model").Select(el => new {
-      Name = el.Attribute("Name").Value,
-      Tables = el.Element("Tables")
-    }).FirstOrDefault(model => model.Name == target);
-
-    var Tables = Model.Tables.Elements("Table").Select(table => new { Table = table.Value,ClassName = table.Attribute("ClassName")?.Value });
-#>
-namespace <#= Database.NameSpace #>
+﻿<#@ include file="ParseXmlFile.tt" #>namespace <#= Database.NameSpace #>
 {
 <#
     SqlConnectionStringBuilder stringBuilder = new();
@@ -43,7 +11,7 @@ namespace <#= Database.NameSpace #>
     using(var conn = new SqlConnection(stringBuilder.ConnectionString))
     {
       conn.Open();
-      foreach(var table in Tables)
+      foreach(var table in Model.Tables)
       {
         string tableName = table.Table;
         string className = table.ClassName;
@@ -69,7 +37,7 @@ namespace <#= Database.NameSpace #>
   {
     // statics
     // -------------------------------------------------------------
-    public static string SQL { get; } = @"SELECT <#= string.Join(",", list.Select(r => r.COLUMN_NAME).ToArray()) #> FROM <#= tableName #>";
+    public static string SQL { get; } = @"SELECT <#= string.Join(",", list.Select(r => $"[{r.COLUMN_NAME}]").ToArray()) #> FROM [<#= tableName #>]";
     public static bool ReadOnly { get; } = false;
 
     // instances
@@ -118,6 +86,7 @@ namespace <#= Database.NameSpace #>
       public int? CHARACTER_MAXIMUM_LENGTH { get; set; }
       public byte? NUMERIC_PRECISION { get; set; }
       public int? NUMERIC_SCALE { get; set; }
+      private bool ColumnIncludeHyphen = false;
 
       public static string SQL = @"
 SELECT
@@ -142,13 +111,14 @@ ORDER BY ORDINAL_POSITION
       public Columns(SqlDataReader rd)
       {
         TABLE_NAME = rd.GetString(0);
-        COLUMN_NAME = rd.GetString(1).Replace("-",string.Empty);
+        COLUMN_NAME = rd.GetString(1);
         ORDINAL_POSITION = rd.GetInt32(2);
         IS_NULLABLE = rd.GetString(3);
         DATA_TYPE = rd.GetString(4);
         CHARACTER_MAXIMUM_LENGTH = rd.IsDBNull(5) ? (int?)null : rd.GetInt32(5);
         NUMERIC_PRECISION = rd.IsDBNull(6) ?  (byte?)null : rd.GetByte(6);
         NUMERIC_SCALE = rd.IsDBNull(7) ? (int?)null : rd.GetInt32(7);
+        ColumnIncludeHyphen = COLUMN_NAME.Contains('-');
       }
 
       public bool IsNullable()
@@ -161,21 +131,38 @@ ORDER BY ORDINAL_POSITION
       {
         var type = dicType[DATA_TYPE];
         var fld = $"fields[{i}]";
+        string colname = ColumnIncludeHyphen ? COLUMN_NAME.Replace("-",string.Empty) : COLUMN_NAME;
         if (!IsNullable())
         {
           if (type == "string")
-            return $"{COLUMN_NAME} = {fld};";
+            return $"{colname} = {fld};";
 
-          return $"{COLUMN_NAME} = {type}.Parse({fld});";
+          return $"{colname} = {type}.Parse({fld});";
         }
 
-        return $"{COLUMN_NAME} = string.IsNullOrEmpty({fld}) ? ({type}?)null : {type}.Parse({fld});";
+        return $"{colname} = string.IsNullOrEmpty({fld}) ? ({type}?)null : {type}.Parse({fld});";
       }
 
       public string GetProperty()
       {
+        string rv;
         var type = dicType[DATA_TYPE];
-        return $"public {type}? {COLUMN_NAME} {{ get; set; }}";
+        if(ColumnIncludeHyphen)
+        {
+          string ALT_COLUMN_NAME = COLUMN_NAME.Replace("-",string.Empty);
+          //string[] ar = [
+          //  $"",
+          //  $"public {type}? {ALT_COLUMN_NAME} {{ get; set; }}"
+          //];
+          //
+          //rv = string.Join('\n',ar);
+          rv = $"public {type}? {ALT_COLUMN_NAME} {{ get; set; }}";
+        }
+        else
+        {
+          rv = $"public {type}? {COLUMN_NAME} {{ get; set; }}";
+        }
+        return rv;
       }
 
       private string GetNullable()

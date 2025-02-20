@@ -39,6 +39,10 @@
     <None Update="inc\SimpleRow.tt">
       <Generator></Generator>
     </None>
+    <None Update="TmnetReadonly.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TmnetReadonly.cs</LastGenOutput>
+    </None>
     <None Update="TmnetSimple.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>TmnetSimple.cs</LastGenOutput>
@@ -58,6 +62,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="TmnetReadonly.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TmnetReadonly.tt</DependentUpon>
+    </Compile>
     <Compile Update="TmnetSimple.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

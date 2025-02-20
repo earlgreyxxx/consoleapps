@@ -1,39 +1,4 @@
-﻿<#
-    var xdoc = XDocument.Load(file);
-    var Databases = xdoc.Descendants("Database").Select(el => {
-      var Login = el.Element("Login");
-      var Models = el.Element("Models");
-      return new {
-        Target = el.Attribute("Target")?.Value,
-        DataSource = el.Attribute("DataSource")?.Value,
-        Schema = el.Attribute("Schema")?.Value,
-        InitialCatalog = el.Attribute("InitialCatalog")?.Value,
-        UserID = Login.Element("UserID")?.Value,
-        Password = Login.Element("Password")?.Value,
-        NameSpace = el.Attribute("NameSpace")?.Value,
-        Models = new {
-          Path = Models.Attribute("Path")?.Value,
-          Name = Models.Attribute("Name")?.Value,
-        }
-      };
-    });
-    var Database = Databases.Where(db => db.Target == target).FirstOrDefault() ?? throw new Exception($"Target:{target}がありません。");
-    var modelpath = this.Host.ResolvePath(Database.Models.Path);
-    if(!File.Exists(modelpath))
-      return string.Empty;
-
-    xdoc = XDocument.Load(modelpath);
-    var Model = xdoc.Descendants("Model").Select(el => new {
-      Name = el.Attribute("Name").Value,
-      Queries = el.Element("Queries")
-    }).Where(model => model.Name == "tmweb").First();
-
-    var Queries = Model.Queries.Elements("Query").Select(query => new {
-      QueryString = query.Value,
-      ClassName = query.Attribute("ClassName").Value
-    });
-#>
-namespace <#= Database.NameSpace #>
+﻿<#@ include file="ParseXmlFile.tt" #>namespace <#= Database.NameSpace #>
 {
 <#
     SqlConnectionStringBuilder stringBuilder = new();
@@ -46,10 +11,10 @@ namespace <#= Database.NameSpace #>
     using(var conn = new SqlConnection(stringBuilder.ConnectionString))
     {
       conn.Open();
-      foreach(var q in Queries)
+      foreach(var q in Model.Queries)
       {
         string className = q.ClassName;
-        string queryString = q.QueryString;
+        string queryString = Regex.Replace(q.QueryString.Trim(),@"\s{2,}"," ");
         SqlCommand cmd = new(queryString, conn);
         var dataAdapter = new SqlDataAdapter(cmd);
         DataSet dataset = new();
@@ -74,8 +39,9 @@ namespace <#= Database.NameSpace #>
 <#
     foreach(DataColumn column in datatable.Columns)
     {
+      string propName = column.Caption.Contains('-') ? column.Caption.Replace("-",string.Empty) : column.Caption;
 #>
-    public <#= column.DataType.Name #>? <#= column.Caption #> { set; get; }
+    public <#= column.DataType.Name #>? <#= propName #> { set; get; }
 <#
     }
 #>
