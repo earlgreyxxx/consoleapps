@@ -3,15 +3,30 @@
   <Database Target="tmweb" DataSource="localhost" Schema="dbo" InitialCatalog="sample" NameSpace="classnamespace">
     <Login>
       <UserID>login</UserID>
-      <Password>pass</Password>
+      <Password>pass_for_login</Password>
     </Login>
     <Models Name="tmweb" Path=".\model.xml" />
   </Database>
   <Database Target="tmnet" DataSource="localhost" Schema="dbo" InitialCatalog="sample" NameSpace="classnamespace">
     <Login>
       <UserID>sa</UserID>
-      <Password>Ddkpass@0001</Password>
+      <Password>pass_for_sa</Password>
     </Login>
     <Models Name="tmnet" Path=".\model.xml" />
+  </Database>
+  <Database Target="akashi/kodomo" DataSource="localhost,14330" Schema="dbo" InitialCatalog="akidsdb_for_test" NameSpace="sqlsrv">
+    <Login>
+      <UserID>sa</UserID>
+      <Password>pass_for_sa</Password>
+    </Login>
+    <Models>
+      <Model Name="akids">
+        <Tables>
+          <Table>rtd_reserve</Table>
+          <Table>rtm_calendar</Table>
+          <Table>rtm_room</Table>
+        </Tables>
+      </Model>
+    </Models>
   </Database>
 </Databases>

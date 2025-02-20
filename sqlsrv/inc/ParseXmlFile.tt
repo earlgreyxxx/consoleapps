@@ -2,7 +2,6 @@
     var xdoc = XDocument.Load(file);
     XElement el = xdoc.Root?.XPathSelectElement($"./Database[@Target='{target}']");
     var Login = el.Element("Login");
-    var Models = el.Element("Models");
 
     var Database = new {
       Target = el.Attribute("Target")?.Value,
@@ -18,12 +17,22 @@
       }
     };
 
-    var modelpath = this.Host.ResolvePath(Database.Models.Path);
-    if(!File.Exists(modelpath))
-      return string.Empty;
+    XElement? xroot = null;
+    if(string.IsNullOrEmpty(Database.Models.Path))
+    {
+      xroot = el.Element("Models");
+    }
+    else
+    {
+      var modelpath = this.Host.ResolvePath(Database.Models.Path);
+      if(!File.Exists(modelpath))
+        return string.Empty;
 
-    xdoc = XDocument.Load(modelpath);
-    el = xdoc.Root?.XPathSelectElement($"./Model[@Name='{target}']");
+      xdoc = XDocument.Load(modelpath);
+      xroot = xdoc.Root;
+    }
+
+    el = xroot?.XPathSelectElement($"./Model[@Name='{target}']");
     var Model = new {
       Name = el.Attribute("Name").Value,
       Tables = el.XPathSelectElements("./Tables/Table").Select(t => new { Table = t.Value,ClassName = t.Attribute("ClassName")?.Value }),

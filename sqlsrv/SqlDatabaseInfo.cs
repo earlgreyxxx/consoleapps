@@ -81,23 +81,34 @@ namespace sqlsrv
       Target = elDatabase.Attribute("Target")?.Value;
 
       var models = elDatabase.Element("Models");
-      var mname = models?.Attribute("Name")?.Value ?? string.Empty;
-      var mpath = models?.Attribute("Path")?.Value ?? string.Empty;
-
-      if (string.IsNullOrEmpty(mname) || string.IsNullOrEmpty(mpath))
+      if (models == null)
         return;
 
-      var confPathDir = Path.GetDirectoryName(ConfPath) ?? string.Empty;
-      var modelpath = Path.Combine(confPathDir, mpath);
+      string mname = models?.Attribute("Name")?.Value ?? target;
+      string mpath = models?.Attribute("Path")?.Value ?? string.Empty;
 
-      if (File.Exists(modelpath))
+      if (string.IsNullOrEmpty(mpath))
+      {
+        LoadModel(models, mname);
+      }
+      else
+      {
+        var confPathDir = Path.GetDirectoryName(ConfPath) ?? string.Empty;
+        var modelpath = Path.Combine(confPathDir, mpath);
+
+        if (!File.Exists(modelpath))
+          throw new FileNotFoundException(modelpath);
+
         LoadModel(modelpath, mname);
+      }
     }
 
-    private void LoadModel(string xmlpath, string name)
+    private void LoadModel(XElement? Models,string name)
     {
-      var xdoc = XDocument.Load(xmlpath);
-      var model = xdoc.Root?.XPathSelectElement($"Model[@Name=\"{name}\"]");
+      if (Models == null)
+        return;
+
+      var model = Models?.XPathSelectElement($"Model[@Name=\"{name}\"]");
       var Tables = model?.Element("Tables");
       var Queries = model?.Element("Queries");
       Model = new Tuple<string?, IEnumerable<Table>?, IEnumerable<Query>?>(
@@ -105,6 +116,12 @@ namespace sqlsrv
         Tables?.Elements("Table").Select(table => new Table() { Value = table.Value, Name = table.Attribute("ClassName")?.Value }),
         Queries?.Elements("Query").Select(query => new Query() { Value = query.Value, Name = query.Attribute("ClassName")?.Value })
       );
+    }
+
+    private void LoadModel(string xmlpath, string name)
+    {
+      var xdoc = XDocument.Load(xmlpath);
+      LoadModel(xdoc.Root ?? throw new Exception("Models要素がありません。"), name);
     }
 
     public override string ToString()

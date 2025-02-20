@@ -21,7 +21,7 @@ namespace sqlsrv
         return;
       }
 
-      var dbinfo = new SqlDatabaseInfo("tmnet",xmlfile);
+      var dbinfo = new SqlDatabaseInfo("akashi/kodomo",xmlfile);
 
       using var conn = new SqlConnection(dbinfo.ToString());
       conn.Open();
