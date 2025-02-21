@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Reflection;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -68,7 +68,7 @@ namespace sqlsrv
       if (string.IsNullOrEmpty(target))
         throw new Exception("targetの指定がありません");
 
-      var xdoc = XDocument.Load(ConfPath) ?? throw new Exception("XMLファイルをロード出来ませんでした。");
+      var xdoc = XDocument.Load(ConfPath) ?? throw new FileNotFoundException(ConfPath);
       var elRoot = xdoc.Root ?? throw new Exception("ルート要素がありません");
 
       var elDatabase = elRoot.XPathSelectElement($"./Database[@Target=\"{target}\"]") ?? throw new Exception("指定された対象が見つかりません");
