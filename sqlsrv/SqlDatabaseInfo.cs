@@ -5,6 +5,9 @@ using System.Xml.XPath;
 
 namespace sqlsrv
 {
+  using Table = KeyValuePair<string?, string>;
+  using Query = KeyValuePair<string?, string>;
+
   class SqlDatabaseInfo
   {
     private string _ConfPath = string.Empty;
@@ -113,8 +116,8 @@ namespace sqlsrv
       var Queries = model?.Element("Queries");
       Model = new Tuple<string?, IEnumerable<Table>?, IEnumerable<Query>?>(
         model?.Attribute("Name")?.Value,
-        Tables?.Elements("Table").Select(table => new Table() { Value = table.Value, Name = table.Attribute("ClassName")?.Value }),
-        Queries?.Elements("Query").Select(query => new Query() { Value = query.Value, Name = query.Attribute("ClassName")?.Value })
+        Tables?.Elements("Table").Select(table => new Table(table.Attribute("ClassName")?.Value,table.Value)),
+        Queries?.Elements("Query").Select(query => new Query(query.Attribute("ClassName")?.Value, query.Value))
       );
     }
 
@@ -128,17 +131,5 @@ namespace sqlsrv
     {
       return ConnectionString;
     }
-  }
-
-  internal class Table
-  {
-    public required string Value { get; set; }
-    public required string? Name { get; set; }
-  }
-
-  internal class Query
-  {
-    public required string Value { get; set; }
-    public required string? Name { get; set; }
   }
 }
