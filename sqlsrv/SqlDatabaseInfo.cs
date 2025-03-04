@@ -79,8 +79,8 @@ namespace sqlsrv
 
       DataSource = elDatabase.Attribute("DataSource")?.Value ?? "";
       InitialCatalog = elDatabase.Attribute("InitialCatalog")?.Value ?? "";
-      UserID = elDatabase.XPathSelectElement("Login/UserID")?.Value ?? string.Empty;
-      Password = elDatabase.XPathSelectElement("Login/Password")?.Value ?? string.Empty;
+      UserID = elLogin.XPathSelectElement("./UserID")?.Value ?? string.Empty;
+      Password = elLogin.XPathSelectElement("./Password")?.Value ?? string.Empty;
       Target = elDatabase.Attribute("Target")?.Value;
 
       var models = elDatabase.Element("Models");

@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBFactory", "DBFactory\DBFactory.csproj", "{07B8CB01-E1F0-4CD9-BE27-A89164A73FCA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendMail", "SendMail\SendMail.csproj", "{9DAE9E16-9E82-43E9-8B67-AA2B6ABEBD9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,8 +34,15 @@ Global
 		{07B8CB01-E1F0-4CD9-BE27-A89164A73FCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07B8CB01-E1F0-4CD9-BE27-A89164A73FCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07B8CB01-E1F0-4CD9-BE27-A89164A73FCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DAE9E16-9E82-43E9-8B67-AA2B6ABEBD9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DAE9E16-9E82-43E9-8B67-AA2B6ABEBD9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DAE9E16-9E82-43E9-8B67-AA2B6ABEBD9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DAE9E16-9E82-43E9-8B67-AA2B6ABEBD9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CF20B5E2-51DF-45B0-8597-910E2A49D193}
 	EndGlobalSection
 EndGlobal

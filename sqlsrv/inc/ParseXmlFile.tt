@@ -36,6 +36,6 @@
     var Model = new {
       Name = el.Attribute("Name").Value,
       Tables = el.XPathSelectElements("./Tables/Table").Select(t => new { Table = t.Value,ClassName = t.Attribute("ClassName")?.Value }),
-      Queries = el.XPathSelectElements("./Queries/Query").Select(q => new { QueryString = q.Value,ClassName = q.Attribute("ClassName")?.Value }),
+      Queries = el.XPathSelectElements("./Queries/Query").Select(q => new { QueryString = q.Value.Trim().Replace("\n"," "),ClassName = q.Attribute("ClassName")?.Value }),
     };
 #>

@@ -409,3 +409,5 @@ FodyWeavers.xsd
 /sqlsrv/TmwebSimple.cs
 /sqlsrv/TmnetSimple.cs
 /sqlsrv/TmnetReadonly.cs
+/sqlsrv/AkidsReadonly.cs
+/sqlsrv/AkidsSimple.cs

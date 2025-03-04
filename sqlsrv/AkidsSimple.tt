@@ -1,0 +1,25 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="System.Xml.XPath" #>
+<#@ assembly name="Microsoft.Data.SqlClient" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Xml.XPath" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data" #>
+<#@ import namespace="Microsoft.Data.SqlClient" #>
+<#@ output extension=".cs" #>
+<#
+    string target = "akashi/kodomo";
+
+    var file = this.Host.ResolvePath(".database.xml");
+    if(!File.Exists(file))
+      return "";
+#>
+<#@ include file="inc/SimpleRow.tt" #>
